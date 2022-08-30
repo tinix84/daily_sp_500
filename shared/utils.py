@@ -12,13 +12,8 @@ import logging
 # IMPORTATION THIRDPARTY
 import pandas as pd
 
-import numpy as np
-from pytz import timezone
-import matplotlib.pyplot as plt
-
 # IMPORTATION INTERNAL
 from config import config
-
 
 def read_json_file(filename):
     with open(filename) as json_file:
