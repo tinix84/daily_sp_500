@@ -1,8 +1,8 @@
 import json
 import logging
-import bs4 as bs
+# import bs4 as bs
 import pandas as pd
-import requests
+# import requests
 import yahoo_fin.stock_info as si
 import yfinance as yf
 from pytickersymbols import PyTickerSymbols
@@ -254,38 +254,20 @@ def get_ticker_info_yahoo_fin():
     raise NotImplementedError
 
 
-def get_sp500_tickers_from_wikipedia(selectedsector):
-    resp = requests.get(
-        'http://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-    soup = bs.BeautifulSoup(resp.text, 'lxml')
-    table = soup.find('table', {'class': 'wikitable sortable'})
+def get_sp500_tickers_from_wikipedia(selected_sector = None):
 
-    tickers = []
-    industries = []
-    sub_industries = []
+    table = pd.read_html(
+        'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+    df = table[0]
 
-    for row in table.findAll('tr')[1:]:
-        ticker = row.findAll('td')[0].text
-        industry = row.findAll('td')[3].text
-        sub_industry = row.findAll('td')[4].text
+    df_sp500 = df.loc[:, ['Symbol', 'GICS Sector', 'GICS Sub-Industry']]
+    if selected_sector is None:
+        df_sp500_filter_sector = df_sp500
+    else:
+        df_sp500_filter_sector = df_sp500[df_sp500['GICS Sector'] == selected_sector]
 
-        tickers.append(ticker)
-        industries.append(industry)
-        sub_industries.append(sub_industry)
-
-    tickers = list(map(lambda s: s.strip(), tickers))
-    industries = list(map(lambda s: s.strip(), industries))
-
-    tickerdf = pd.DataFrame(tickers, columns=['ticker'])
-    sectordf = pd.DataFrame(industries, columns=['industry'])
-    sub_sectordf = pd.DataFrame(sub_industries, columns=['sub_industry'])
-
-    sp500_df = pd.concat([tickerdf, sectordf, sub_sectordf], axis=1)
-
-    filtersector = sp500_df.loc[sp500_df['sub_industry'] == selectedsector]
-
-    listoftickers = filtersector['ticker'].tolist()
-    return listoftickers, sp500_df
+    tickers_list = df_sp500_filter_sector['Symbol'].tolist()
+    return tickers_list, df_sp500
 
 
 if __name__ == '__main__':

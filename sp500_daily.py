@@ -62,26 +62,28 @@ def run_DEV():
 
     logging.info('COMPLETED!')
 
+def sp500_daily_original():
+    
+    table=pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+    df = table[0]
+    sp_ticks = df["Symbol"].to_list()
+    sp_ticks_forYF = [tick.replace(".","-") for tick in sp_ticks]
+
+    closes = pd.DataFrame()
+    for idx in range(0,len(sp_ticks_forYF),20):
+        df = yf.download(sp_ticks_forYF[idx:idx+20],period="1y", progress=True)["Adj Close"]
+        closes = pd.concat([df, closes], axis=1)
+        time.sleep(.5)
+    closes.to_csv("SP500_prices_1yr.csv")
 
 if __name__ == '__main__':
 
     t = time.time()
-    run_DEV()
+    sp500_daily_original()
+    # run_DEV()
     # logging.info('run_DEV: {}'.format(time.time() - t))
 
 
 
 
 
-# if __name__ == '__main__':
-#     table=pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-#     df = table[0]
-#     sp_ticks = df["Symbol"].to_list()
-#     sp_ticks_forYF = [tick.replace(".","-") for tick in sp_ticks]
-
-#     closes = pd.DataFrame()
-#     for idx in range(0,len(sp_ticks_forYF),20):
-#         df = yf.download(sp_ticks_forYF[idx:idx+20],period="1y", progress=True)["Adj Close"]
-#         closes = pd.concat([df, closes], axis=1)
-#         time.sleep(.5)
-#     closes.to_csv("SP500_prices_1yr.csv")
